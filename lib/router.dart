@@ -13,13 +13,22 @@ import 'features/home/home_screen.dart';
 import 'features/orders/orders_screen.dart';
 import 'features/product/product_detail_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/profile/shop_profile_screen.dart';
 import 'features/shop/shop_screen.dart';
 import 'features/shell/main_shell.dart';
 
 /// Where to send the user for their sign-in state, or null to stay. The page they asked for
 /// is carried in `?from=` through the splash and login screens, so a link to a product still
 /// opens that product after the saved session is checked or after signing in.
-String? authRedirect({required bool loading, required bool signedIn, required Uri uri}) {
+///
+/// A new account (signed in while on the register page) fills in its shop profile first,
+/// then continues to that page.
+String? authRedirect({
+  required bool loading,
+  required bool signedIn,
+  required Uri uri,
+  bool shopProfileComplete = true,
+}) {
   final location = uri.path;
   final from = _safeFrom(uri.queryParameters['from']);
   if (loading) {
@@ -31,6 +40,9 @@ String? authRedirect({required bool loading, required bool signedIn, required Ur
     if (onAuthPage) return null;
     final target = location == '/splash' ? from : _safeFrom(uri.toString());
     return target == null || target == '/home' ? '/login' : '/login?from=${Uri.encodeComponent(target)}';
+  }
+  if (location == '/register' && !shopProfileComplete) {
+    return '/shop-profile?from=${Uri.encodeComponent(from ?? '/home')}';
   }
   if (onAuthPage || location == '/splash') return from ?? '/home';
   return null;
@@ -54,7 +66,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: authChanged,
     redirect: (context, state) {
       final auth = ref.read(authControllerProvider);
-      return authRedirect(loading: auth.isLoading, signedIn: auth.value != null, uri: state.uri);
+      return authRedirect(
+        loading: auth.isLoading,
+        signedIn: auth.value != null,
+        uri: state.uri,
+        shopProfileComplete: auth.value?.shopProfileComplete ?? true,
+      );
     },
     routes: [
       GoRoute(path: '/splash', builder: (_, _) => const _SplashScreen()),
@@ -65,6 +82,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) => ProductDetailScreen(slug: state.pathParameters['slug']!),
       ),
       GoRoute(path: '/checkout', builder: (_, _) => const CheckoutScreen()),
+      GoRoute(
+        path: '/shop-profile',
+        builder: (_, state) => ShopProfileScreen(from: _safeFrom(state.uri.queryParameters['from'])),
+      ),
       GoRoute(
         path: '/order-placed/:id',
         builder: (_, state) => OrderDetailScreen(orderId: state.pathParameters['id']!, justPlaced: true),

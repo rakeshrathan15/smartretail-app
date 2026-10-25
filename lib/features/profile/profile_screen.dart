@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../auth/auth_controller.dart';
+import 'shop_profile_repository.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -45,12 +47,16 @@ class ProfileScreen extends ConsumerWidget {
                   if (!user.shopProfileComplete)
                     Card(
                       color: theme.colorScheme.secondaryContainer,
-                      child: const ListTile(
-                        leading: Icon(Icons.store_mall_directory_outlined),
-                        title: Text('Complete your shop profile'),
-                        subtitle: Text('Shop name, GSTIN and location are needed for delivery.'),
+                      child: ListTile(
+                        leading: const Icon(Icons.store_mall_directory_outlined),
+                        title: const Text('Complete your shop profile'),
+                        subtitle: const Text('Shop name, GSTIN and location are needed for delivery.'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.push('/shop-profile'),
                       ),
-                    ),
+                    )
+                  else
+                    const _ShopCard(),
                   Card(
                     child: Column(
                       children: [
@@ -76,6 +82,28 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
+    );
+  }
+}
+
+class _ShopCard extends ConsumerWidget {
+  const _ShopCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final shop = ref.watch(shopProfileProvider).value;
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.storefront_outlined),
+        title: Text(shop?.shopName ?? 'Shop'),
+        subtitle: Text([
+          if (shop?.address != null) shop!.address!,
+          if (shop?.gstNumber != null) 'GSTIN ${shop!.gstNumber}',
+        ].join('\n')),
+        isThreeLine: shop?.gstNumber != null,
+        trailing: const Text('Edit'),
+        onTap: () => context.push('/shop-profile'),
+      ),
     );
   }
 }

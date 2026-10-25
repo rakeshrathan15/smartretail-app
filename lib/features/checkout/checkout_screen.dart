@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/api_exception.dart';
 import '../../core/format.dart';
 import '../../core/widgets/error_retry.dart';
+import '../auth/auth_controller.dart';
 import '../cart/cart_controller.dart';
 import '../cart/order_summary_card.dart';
 import 'address_sheet.dart';
@@ -135,6 +136,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
         children: [
+          if (ref.watch(authControllerProvider).value?.shopProfileComplete == false)
+            Card(
+              color: Theme.of(context).colorScheme.secondaryContainer,
+              child: ListTile(
+                leading: const Icon(Icons.store_mall_directory_outlined),
+                title: const Text('Add your shop details and location'),
+                subtitle: const Text('It helps us deliver to the right place.'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/shop-profile'),
+              ),
+            ),
           _SectionTitle('Deliver to'),
           if (addresses.isLoading && addressList.isEmpty) const LinearProgressIndicator(),
           if (addresses.hasError) Text('${addresses.error}'),

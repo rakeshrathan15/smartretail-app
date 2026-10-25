@@ -1,8 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smart_retail_app/router.dart';
 
-String? redirect(String location, {bool loading = false, bool signedIn = false}) =>
-    authRedirect(loading: loading, signedIn: signedIn, uri: Uri.parse(location));
+String? redirect(String location, {bool loading = false, bool signedIn = false, bool shopProfileComplete = true}) =>
+    authRedirect(
+      loading: loading,
+      signedIn: signedIn,
+      uri: Uri.parse(location),
+      shopProfileComplete: shopProfileComplete,
+    );
 
 void main() {
   test('a link opened while the session loads is kept and opened afterwards', () {
@@ -26,5 +31,13 @@ void main() {
     expect(redirect('/splash?from=https%3A%2F%2Fevil.example', signedIn: true), '/home');
     expect(redirect('/home'), '/login');
     expect(redirect('/cart', signedIn: true), isNull);
+  });
+
+  test('a new account fills in its shop profile, then continues', () {
+    expect(redirect('/register', signedIn: true, shopProfileComplete: false), '/shop-profile?from=%2Fhome');
+    expect(redirect('/register?from=%2Fcart', signedIn: true, shopProfileComplete: false), '/shop-profile?from=%2Fcart');
+    // Signing in to an existing account is not interrupted.
+    expect(redirect('/login', signedIn: true, shopProfileComplete: false), '/home');
+    expect(redirect('/shop-profile?from=%2Fhome', signedIn: true, shopProfileComplete: false), isNull);
   });
 }
