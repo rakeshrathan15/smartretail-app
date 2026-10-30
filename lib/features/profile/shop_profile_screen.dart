@@ -9,6 +9,7 @@ import '../../core/widgets/error_retry.dart';
 import '../auth/auth_controller.dart';
 import '../auth/auth_models.dart';
 import '../checkout/checkout_providers.dart';
+import 'delivery_route_repository.dart';
 import 'shop_profile_repository.dart';
 
 /// Shop details and map location. [from] is where to continue after saving (after sign-up).
@@ -128,6 +129,8 @@ class _ShopProfileFormState extends ConsumerState<_ShopProfileForm> {
       ref.invalidate(shopProfileProvider);
       // The first save also creates the default delivery address.
       ref.invalidate(addressesProvider);
+      // The new pin may put the shop on a different route.
+      ref.invalidate(deliveryRouteProvider);
       await ref.read(authControllerProvider.notifier).refreshUser();
       if (!mounted) return;
       if (_onboarding) {

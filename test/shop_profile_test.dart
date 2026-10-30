@@ -164,4 +164,24 @@ void main() {
     expect(saved?['gstNumber'], '36ABCDE1234F1Z5');
     expect(find.text('Saved Lakshmi Kirana'), findsOneWidget);
   });
+
+  testWidgets('the Profile tab shows the delivery route and next delivery day', (tester) async {
+    final tokens = InMemoryTokenStorage();
+    await tokens.save(accessToken: 'access-1', refreshToken: 'refresh-1');
+    await pumpApp(tester, tokens: tokens, routes: {
+      'GET /api/me': (_) => FakeResponse(200, {...userJson(), 'shopProfileComplete': true}),
+      'GET /api/me/shop-profile': (_) => FakeResponse(200, {..._empty, 'shopName': 'Lakshmi Kirana', 'complete': true}),
+      'GET /api/me/delivery-route': (_) => const FakeResponse(200, {
+            'assigned': true,
+            'name': 'Warangal North',
+            'area': null,
+            'days': ['MON', 'THU'],
+            'nextDeliveryDate': '2026-11-05',
+          }),
+    });
+
+    await tapText(tester, 'Profile');
+    expect(find.textContaining('Delivery route: Warangal North (Mon, Thu)'), findsOneWidget);
+    expect(find.textContaining('Order today, delivered Thu 5 Nov'), findsOneWidget);
+  });
 }

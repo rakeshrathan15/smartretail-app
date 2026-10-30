@@ -5,7 +5,8 @@ Customer app for ordering beverages by the case. Talks to `../smart-retail-backe
 Flutter 3.47 · Riverpod 3 · go_router · Dio · flutter_secure_storage · shared_preferences · image_picker · flutter_map (OpenStreetMap) · geolocator
 
 After registering, the app asks for the shop profile: name, GSTIN, address and a pin on the map
-(tap the map or use the current location). It can be edited later from the Profile tab.
+(tap the map or use the current location). It can be edited later from the Profile tab, which also
+shows the shop's delivery route and next delivery day.
 
 ## Run
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../auth/auth_controller.dart';
+import 'delivery_route_repository.dart';
 import 'shop_profile_repository.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -92,6 +93,7 @@ class _ShopCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final shop = ref.watch(shopProfileProvider).value;
+    final route = ref.watch(deliveryRouteProvider).whenOrNull(data: (route) => route);
     return Card(
       child: ListTile(
         leading: const Icon(Icons.storefront_outlined),
@@ -99,11 +101,21 @@ class _ShopCard extends ConsumerWidget {
         subtitle: Text([
           if (shop?.address != null) shop!.address!,
           if (shop?.gstNumber != null) 'GSTIN ${shop!.gstNumber}',
+          if (route != null) ..._routeLines(route),
         ].join('\n')),
-        isThreeLine: shop?.gstNumber != null,
+        isThreeLine: shop?.gstNumber != null || route != null,
         trailing: const Text('Edit'),
         onTap: () => context.push('/shop-profile'),
       ),
     );
+  }
+
+  static List<String> _routeLines(MyDeliveryRoute route) {
+    if (!route.assigned) return const ['Not on a delivery route yet'];
+    final next = route.nextDeliveryLabel;
+    return [
+      'Delivery route: ${route.name}${route.days.isEmpty ? '' : ' (${route.daysLabel})'}',
+      if (next != null) 'Order today, delivered $next',
+    ];
   }
 }
