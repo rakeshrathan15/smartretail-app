@@ -1,0 +1,9 @@
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  image_path_android: "assets/icon/app_icon_rounded.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  background_color_ios: "#2B7BDE"
+  web:
+    generate: true
