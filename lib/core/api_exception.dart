@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-/// An error from the backend, read from its RFC 9457 problem-detail body.
+/// An error from the backend, read from the `error` object of its response.
 class ApiException implements Exception {
   ApiException(this.message, {this.statusCode, this.fieldErrors = const {}});
 
@@ -16,15 +16,16 @@ class ApiException implements Exception {
       return ApiException('Cannot reach the server. Check your connection.');
     }
     final data = response.data;
-    if (data is Map<String, dynamic>) {
+    final error = data is Map<String, dynamic> ? data['error'] : null;
+    if (error is Map<String, dynamic>) {
       final errors = <String, String>{};
-      final rawErrors = data['errors'];
-      if (rawErrors is Map) {
-        rawErrors.forEach((key, value) => errors['$key'] = '$value');
+      final details = error['details'];
+      if (details is Map) {
+        details.forEach((key, value) => errors['$key'] = '$value');
       }
-      final detail = data['detail'] as String?;
+      final message = error['message'] as String?;
       return ApiException(
-        detail ?? 'Something went wrong (${response.statusCode})',
+        message ?? 'Something went wrong (${response.statusCode})',
         statusCode: response.statusCode,
         fieldErrors: errors,
       );

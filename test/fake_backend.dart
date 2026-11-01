@@ -23,9 +23,11 @@ class FakeBackend implements HttpClientAdapter {
   Future<ResponseBody> fetch(RequestOptions options, Stream<Uint8List>? requestStream, Future<void>? cancelFuture) async {
     requests.add(options);
     final handler = routes['${options.method} ${options.path}'];
-    final response = handler?.call(options) ?? const FakeResponse(404, {'detail': 'Not found'});
+    final response = handler?.call(options) ?? const FakeResponse(404, {'message': 'Not found'});
     return ResponseBody.fromString(
-      response.body == null ? '' : jsonEncode(response.body),
+      response.body == null
+          ? ''
+          : jsonEncode(response.status < 400 ? {'success': true, 'data': response.body} : {'success': false, 'error': response.body}),
       response.status,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],

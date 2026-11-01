@@ -6,7 +6,8 @@ import 'token_storage.dart';
 ///
 /// Adds the bearer token to requests, and when a request fails with 401 it
 /// exchanges the refresh token for a new pair once and retries. If the refresh
-/// fails, the tokens are cleared and [onSessionExpired] is called.
+/// fails, the tokens are cleared and [onSessionExpired] is called. Successful
+/// responses reach callers as the contents of the backend's `data` field.
 Dio createApiClient({
   required String baseUrl,
   required TokenStorage tokens,
@@ -26,8 +27,21 @@ Dio createApiClient({
     dio.httpClientAdapter = adapter;
     refreshDio.httpClientAdapter = adapter;
   }
-  dio.interceptors.add(_AuthInterceptor(dio, refreshDio, tokens, onSessionExpired));
+  refreshDio.interceptors.add(_UnwrapInterceptor());
+  dio.interceptors
+    ..add(_UnwrapInterceptor())
+    ..add(_AuthInterceptor(dio, refreshDio, tokens, onSessionExpired));
   return dio;
+}
+
+/// Replaces the backend's `{"success": true, "data": ...}` with what is in `data`.
+class _UnwrapInterceptor extends Interceptor {
+  @override
+  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
+    final body = response.data;
+    if (body is Map<String, dynamic> && body['success'] == true) response.data = body['data'];
+    handler.next(response);
+  }
 }
 
 class _AuthInterceptor extends QueuedInterceptor {
