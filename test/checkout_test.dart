@@ -313,7 +313,7 @@ void main() {
       cart: [_cart],
       addresses: [_address],
       routes: {
-        'POST /api/orders': (_) => const FakeResponse(409, {'detail': 'Only 3 cases of Thums Up 750ml PET are left.'}),
+        'POST /api/orders': (_) => const FakeResponse(409, {'message': 'Only 3 cases of Thums Up 750ml PET are left.'}),
       },
     );
     await tester.tap(find.text('Cart'));

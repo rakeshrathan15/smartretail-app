@@ -32,7 +32,7 @@ void main() {
     var expired = false;
     final backend = FakeBackend({
       'GET /api/me': (_) => const FakeResponse(401),
-      'POST /api/auth/refresh': (_) => const FakeResponse(401, {'detail': 'Session expired'}),
+      'POST /api/auth/refresh': (_) => const FakeResponse(401, {'message': 'Session expired'}),
     });
     final dio = createApiClient(
       baseUrl: 'http://test',
@@ -46,15 +46,19 @@ void main() {
     expect(await tokens.readRefreshToken(), isNull);
   });
 
-  test('reads message and field errors from a problem-detail response', () {
+  test('reads message and field errors from an error response', () {
     final error = DioException(
       requestOptions: RequestOptions(path: '/api/auth/register'),
       response: Response(
         requestOptions: RequestOptions(path: '/api/auth/register'),
         statusCode: 400,
         data: {
-          'detail': 'Validation failed',
-          'errors': {'email': 'must be a well-formed email address'},
+          'success': false,
+          'error': {
+            'code': 'VALIDATION_FAILED',
+            'message': 'Validation failed',
+            'details': {'email': 'must be a well-formed email address'},
+          },
         },
       ),
     );

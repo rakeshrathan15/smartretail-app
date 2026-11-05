@@ -43,7 +43,7 @@ void main() {
 
   testWidgets('shows the server error when the password is wrong', (tester) async {
     final backend = FakeBackend({
-      'POST /api/auth/login': (_) => const FakeResponse(401, {'detail': 'Invalid email/mobile or password'}),
+      'POST /api/auth/login': (_) => const FakeResponse(401, {'message': 'Invalid email/mobile or password'}),
     });
     await tester.pumpWidget(appWith(backend, InMemoryTokenStorage()));
     await tester.pumpAndSettle();
